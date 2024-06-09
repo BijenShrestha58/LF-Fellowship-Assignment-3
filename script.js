@@ -93,7 +93,20 @@ class Ball {
     this.y = this.y + this.dy * 5;
   }
 
-  isBallCollision() {}
+  isBallCollision(ball2) {
+    if (
+      (this.x - ball2.x) ** 2 + (this.y - ball2.y) ** 2 <=
+      (this.r + ball2.r) ** 2
+    ) {
+      let temp = this.dx;
+      this.dx = ball2.dx;
+      ball2.dx = temp;
+
+      temp = this.dy;
+      this.dy = ball2.dy;
+      ball2.dy = temp;
+    }
+  }
 }
 
 const BALL_COUNT = 10;
@@ -122,5 +135,12 @@ setInterval(() => {
     ball.isWallCollision();
     ball.ballMovement();
   });
+  for (let i = 0; i < ballArray.length; i++) {
+    for (let j = 0; j < ballArray.length; j++) {
+      if (ballArray[i] === ballArray[j]) break;
+      ballArray[i].isBallCollision(ballArray[j]);
+    }
+  }
+  ballArray.forEach((ball) => ball.ballMovement());
 }, 1000 / 60);
 // console.log(ballArray);
