@@ -18,14 +18,13 @@ function getRandomPosition(minX, maxX, minY, maxY, radius) {
       Math.random() * (maxYFloored - minYCeiled) + minYCeiled
     );
     valid = true;
+
     for (let i of ballArray) {
-      if (
-        Math.sqrt(
-          Math.pow(i.x + i.r - randomX + radius, 2) +
-            Math.pow(i.y + i.r - randomY + radius, 2)
-        ) <=
-        radius + i.r
-      ) {
+      let distance = Math.sqrt(
+        (i.x + i.r - randomX + radius) ** 2 +
+          (i.y + i.r - randomY + radius) ** 2
+      );
+      if (distance <= radius + i.r) {
         valid = false;
       }
     }
@@ -67,6 +66,8 @@ class Ball {
     this.dx = dx;
     this.dy = dy;
     this.color = color;
+    this.cx = x + r;
+    this.cy = y + r;
 
     this.element = document.createElement("div");
 
@@ -98,6 +99,7 @@ class Ball {
       (this.x - ball2.x) ** 2 + (this.y - ball2.y) ** 2 <=
       (this.r + ball2.r) ** 2
     ) {
+      this.isOverlap(ball2);
       let temp = this.dx;
       this.dx = ball2.dx;
       ball2.dx = temp;
@@ -107,9 +109,37 @@ class Ball {
       ball2.dy = temp;
     }
   }
+
+  isOverlap(ball2) {
+    let distance = Math.sqrt((ball2.x - this.x) ** 2 + (ball2.y - this.y) ** 2);
+    let distanceRequired = ball2.r + this.r;
+    if (distance >= distanceRequired) return;
+
+    let overlap = distanceRequired - distance;
+
+    let correctionX = (overlap * (ball2.x - this.x)) / distance;
+    let correctionY = (overlap * (ball2.y - this.y)) / distance;
+
+    this.x -= correctionX / 2;
+    this.y -= correctionY / 2;
+
+    ball2.x += correctionX / 2;
+    ball2.y += correctionY / 2;
+
+    this.x = Math.max(this.r, Math.min(this.x, BOUNDARY_X_MAX - this.r * 2));
+    this.y = Math.max(this.r, Math.min(this.y, BOUNDARY_Y_MAX - this.r * 2));
+    ball2.x = Math.max(
+      ball2.r,
+      Math.min(ball2.x, BOUNDARY_X_MAX - ball2.r * 2)
+    );
+    ball2.y = Math.max(
+      ball2.r,
+      Math.min(ball2.y, BOUNDARY_Y_MAX - ball2.r * 2)
+    );
+  }
 }
 
-const BALL_COUNT = 10;
+const BALL_COUNT = 20;
 
 const ballArray = [];
 
@@ -139,6 +169,7 @@ setInterval(() => {
     for (let j = 0; j < ballArray.length; j++) {
       if (ballArray[i] === ballArray[j]) break;
       ballArray[i].isBallCollision(ballArray[j]);
+      ballArray[i].isOverlap(ballArray[j]);
     }
   }
   ballArray.forEach((ball) => ball.ballMovement());
