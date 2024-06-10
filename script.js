@@ -174,7 +174,7 @@ class Ball {
   }
 }
 
-const BALL_COUNT = 200;
+const BALL_COUNT = 50;
 
 const ballArray = [];
 
